@@ -447,7 +447,7 @@ audio.addEventListener("ended",function(){playing=false;testing=false;renderBann
 var bannerPrayer=null;
 function renderBanner(){
   var show=!!bannerPrayer||testing;
-  nowAdhan.hidden=!show; nextBox.hidden=show&&!testing;
+  nowAdhan.hidden=!show; nextBox.hidden=show;
   nowTitle.textContent=testing?"تجربة صوت الأذان":(bannerPrayer?"حان الآن موعد أذان "+NAME[bannerPrayer]:"");
   stopBtn.hidden=!playing;
 }
@@ -552,13 +552,23 @@ setInterval(function(){
 },180000);
 
 var fsBtn=document.getElementById("fs");
+/* old TV browsers only know the webkit-prefixed fullscreen calls */
+function fsElement(){return document.fullscreenElement||document.webkitFullscreenElement||document.webkitCurrentFullScreenElement||null}
 fsBtn.addEventListener("click",function(){
+  var el=document.documentElement;
   try{
-    if(document.fullscreenElement){document.exitFullscreen()}
-    else{var r=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen(); if(r&&r.catch)r.catch(function(){})}
+    if(fsElement()){
+      var ex=document.exitFullscreen||document.webkitExitFullscreen||document.webkitCancelFullScreen;
+      if(ex)ex.call(document);
+    }else{
+      var req=el.requestFullscreen||el.webkitRequestFullscreen||el.webkitRequestFullScreen;
+      if(req){var r=req.call(el); if(r&&r.catch)r.catch(function(){});}
+    }
   }catch(e){}
 });
-document.addEventListener("fullscreenchange",function(){fsBtn.hidden=!!document.fullscreenElement});
+function onFs(){fsBtn.hidden=!!fsElement()}
+document.addEventListener("fullscreenchange",onFs);
+document.addEventListener("webkitfullscreenchange",onFs);
 </script>
 </body>
 </html>
